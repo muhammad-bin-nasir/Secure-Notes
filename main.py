@@ -4,29 +4,32 @@ from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse
 from pydantic import BaseModel
 from motor.motor_asyncio import AsyncIOMotorClient
-from bson.objectid import ObjectId
+from bson import ObjectId
 from datetime import datetime
 from typing import List, Optional
 import os
 
 app = FastAPI(title="Secure Notes API")
 
-# CORS middleware for frontend (change '*' to your frontend URL in production)
+# CORS
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # Change this to your frontend domain in production
+    allow_origins=["*"],  # Restrict in prod
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
-# MongoDB connection
-MONGODB_URL = os.getenv("MONGODB_URL", "mongodb://localhost:27017")
+# MongoDB
+MONGODB_URL = os.getenv("MONGODB_URL")
+if not MONGODB_URL:
+    raise RuntimeError("MONGODB_URL environment variable not set")
+
 client = AsyncIOMotorClient(MONGODB_URL)
 database = client.secure_notes
 notes_collection = database.notes
 
-# Pydantic models
+# Models
 class NoteCreate(BaseModel):
     title: str
     encrypted_content: str
@@ -48,17 +51,15 @@ class NoteUpdate(BaseModel):
     salt: Optional[str] = None
     iv: Optional[str] = None
 
-# Serve static files if directory exists
-if os.path.isdir("static"):
-    app.mount("/static", StaticFiles(directory="static"), name="static")
+# Static frontend
+static_path = os.path.join(os.path.dirname(__file__), "static")
+app.mount("/static", StaticFiles(directory=static_path), name="static")
 
 @app.get("/")
 async def serve_frontend():
-    index_path = os.path.join("static", "index.html")
-    if os.path.isfile(index_path):
-        return FileResponse(index_path)
-    raise HTTPException(status_code=404, detail="Frontend not found")
+    return FileResponse(os.path.join(static_path, "index.html"))
 
+# API Endpoints
 @app.post("/api/notes", response_model=NoteResponse)
 async def create_note(note: NoteCreate):
     note_dict = {
@@ -71,6 +72,7 @@ async def create_note(note: NoteCreate):
     }
     result = await notes_collection.insert_one(note_dict)
     note_dict["id"] = str(result.inserted_id)
+    note_dict.pop("_id", None)
     return NoteResponse(**note_dict)
 
 @app.get("/api/notes", response_model=List[NoteResponse])
@@ -88,11 +90,9 @@ async def get_note(note_id: str):
         object_id = ObjectId(note_id)
     except:
         raise HTTPException(status_code=400, detail="Invalid note ID format")
-    
     note = await notes_collection.find_one({"_id": object_id})
     if not note:
         raise HTTPException(status_code=404, detail="Note not found")
-    
     note["id"] = str(note["_id"])
     note.pop("_id", None)
     return NoteResponse(**note)
@@ -103,7 +103,6 @@ async def update_note(note_id: str, note_update: NoteUpdate):
         object_id = ObjectId(note_id)
     except:
         raise HTTPException(status_code=400, detail="Invalid note ID format")
-    
     update_dict = {"updated_at": datetime.utcnow()}
     if note_update.title is not None:
         update_dict["title"] = note_update.title
@@ -113,15 +112,9 @@ async def update_note(note_id: str, note_update: NoteUpdate):
         update_dict["salt"] = note_update.salt
     if note_update.iv is not None:
         update_dict["iv"] = note_update.iv
-    
-    result = await notes_collection.update_one(
-        {"_id": object_id},
-        {"$set": update_dict}
-    )
-    
+    result = await notes_collection.update_one({"_id": object_id}, {"$set": update_dict})
     if result.matched_count == 0:
         raise HTTPException(status_code=404, detail="Note not found")
-    
     note = await notes_collection.find_one({"_id": object_id})
     note["id"] = str(note["_id"])
     note.pop("_id", None)
@@ -133,11 +126,9 @@ async def delete_note(note_id: str):
         object_id = ObjectId(note_id)
     except:
         raise HTTPException(status_code=400, detail="Invalid note ID format")
-    
     result = await notes_collection.delete_one({"_id": object_id})
     if result.deleted_count == 0:
         raise HTTPException(status_code=404, detail="Note not found")
-    
     return {"message": "Note deleted successfully"}
 
 @app.get("/api/health")
