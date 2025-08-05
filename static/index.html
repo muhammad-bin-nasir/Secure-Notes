@@ -1,0 +1,595 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Secure Notes</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #2c3e50, #34495e);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            opacity: 0.9;
+            font-size: 1.1rem;
+        }
+
+        .main-content {
+            padding: 30px;
+        }
+
+        .note-form {
+            background: #f8f9fa;
+            padding: 30px;
+            border-radius: 15px;
+            margin-bottom: 30px;
+            border: 2px solid #e9ecef;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #2c3e50;
+        }
+
+        input, textarea {
+            width: 100%;
+            padding: 12px 15px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            font-size: 16px;
+            transition: border-color 0.3s ease;
+        }
+
+        input:focus, textarea:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        textarea {
+            resize: vertical;
+            min-height: 120px;
+        }
+
+        .btn {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 600;
+            transition: transform 0.2s, box-shadow 0.2s;
+            margin-right: 10px;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-danger {
+            background: linear-gradient(135deg, #e74c3c, #c0392b);
+        }
+
+        .btn-danger:hover {
+            box-shadow: 0 5px 15px rgba(231, 76, 60, 0.4);
+        }
+
+        .btn-secondary {
+            background: linear-gradient(135deg, #95a5a6, #7f8c8d);
+        }
+
+        .notes-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+            gap: 20px;
+        }
+
+        .note-card {
+            background: white;
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.1);
+            border: 2px solid #f1f3f5;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .note-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+        }
+
+        .note-title {
+            font-size: 1.4rem;
+            font-weight: 700;
+            color: #2c3e50;
+            margin-bottom: 15px;
+            border-bottom: 2px solid #eee;
+            padding-bottom: 10px;
+        }
+
+        .note-content {
+            color: #555;
+            line-height: 1.6;
+            margin-bottom: 20px;
+            font-size: 1rem;
+        }
+
+        .note-meta {
+            color: #888;
+            font-size: 0.9rem;
+            margin-bottom: 15px;
+        }
+
+        .note-actions {
+            display: flex;
+            gap: 10px;
+        }
+
+        .btn-small {
+            padding: 8px 15px;
+            font-size: 14px;
+        }
+
+        .password-form {
+            background: #fff3cd;
+            border: 2px solid #ffeaa7;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+
+        .alert {
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+
+        .alert-success {
+            background: #d4edda;
+            border: 2px solid #c3e6cb;
+            color: #155724;
+        }
+
+        .alert-error {
+            background: #f8d7da;
+            border: 2px solid #f5c6cb;
+            color: #721c24;
+        }
+
+        .encrypted-badge {
+            background: #28a745;
+            color: white;
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 0.8rem;
+            font-weight: 600;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: #666;
+            font-size: 1.1rem;
+        }
+
+        @media (max-width: 768px) {
+            .notes-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .header h1 {
+                font-size: 2rem;
+            }
+            
+            .main-content {
+                padding: 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🛡️ Secure Notes</h1>
+            <p>Your personal notes, encrypted and secure</p>
+        </div>
+
+        <div class="main-content">
+            <div id="alert-container"></div>
+
+            <!-- New Note Form -->
+            <div class="note-form">
+                <h2 style="margin-bottom: 20px; color: #2c3e50;">Create New Note</h2>
+                <form id="noteForm">
+                    <div class="form-group">
+                        <label for="title">Note Title</label>
+                        <input type="text" id="title" required placeholder="Enter a title for your note">
+                    </div>
+                    <div class="form-group">
+                        <label for="content">Note Content</label>
+                        <textarea id="content" required placeholder="Write your note here..."></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label for="password">Encryption Password</label>
+                        <input type="password" id="password" required placeholder="Enter password to encrypt this note">
+                    </div>
+                    <button type="submit" class="btn">
+                        🔒 Create Encrypted Note
+                    </button>
+                </form>
+            </div>
+
+            <!-- Password Entry for Decryption -->
+            <div id="passwordModal" class="password-form" style="display: none;">
+                <h3>Enter Password to Decrypt Note</h3>
+                <p>Note: <span id="decryptNoteTitle"></span></p>
+                <div class="form-group">
+                    <input type="password" id="decryptPassword" placeholder="Enter password">
+                </div>
+                <button onclick="decryptNote()" class="btn">Decrypt</button>
+                <button onclick="cancelDecrypt()" class="btn-secondary btn">Cancel</button>
+            </div>
+
+            <!-- Notes Display -->
+            <div id="notesContainer">
+                <div class="loading">Loading notes...</div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Encryption utilities using Web Crypto API
+        class CryptoUtils {
+            static async deriveKey(password, salt) {
+                const encoder = new TextEncoder();
+                const keyMaterial = await crypto.subtle.importKey(
+                    'raw',
+                    encoder.encode(password),
+                    { name: 'PBKDF2' },
+                    false,
+                    ['deriveKey']
+                );
+                
+                return crypto.subtle.deriveKey(
+                    {
+                        name: 'PBKDF2',
+                        salt: salt,
+                        iterations: 100000,
+                        hash: 'SHA-256'
+                    },
+                    keyMaterial,
+                    { name: 'AES-GCM', length: 256 },
+                    false,
+                    ['encrypt', 'decrypt']
+                );
+            }
+
+            static async encrypt(text, password) {
+                const encoder = new TextEncoder();
+                const salt = crypto.getRandomValues(new Uint8Array(16));
+                const iv = crypto.getRandomValues(new Uint8Array(12));
+                
+                const key = await this.deriveKey(password, salt);
+                const encrypted = await crypto.subtle.encrypt(
+                    { name: 'AES-GCM', iv: iv },
+                    key,
+                    encoder.encode(text)
+                );
+
+                return {
+                    encrypted: Array.from(new Uint8Array(encrypted)),
+                    salt: Array.from(salt),
+                    iv: Array.from(iv)
+                };
+            }
+
+            static async decrypt(encryptedArray, salt, iv, password) {
+                try {
+                    const key = await this.deriveKey(password, new Uint8Array(salt));
+                    const decrypted = await crypto.subtle.decrypt(
+                        { name: 'AES-GCM', iv: new Uint8Array(iv) },
+                        key,
+                        new Uint8Array(encryptedArray)
+                    );
+                    
+                    return new TextDecoder().decode(decrypted);
+                } catch (error) {
+                    throw new Error('Invalid password or corrupted data');
+                }
+            }
+
+            static arrayToBase64(array) {
+                return btoa(String.fromCharCode.apply(null, array));
+            }
+
+            static base64ToArray(base64) {
+                return Array.from(atob(base64), c => c.charCodeAt(0));
+            }
+        }
+
+        // API utilities
+        class API {
+            static async request(url, options = {}) {
+                const response = await fetch(`/api${url}`, {
+                    headers: {
+                        'Content-Type': 'application/json',
+                        ...options.headers
+                    },
+                    ...options
+                });
+
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+
+                return response.json();
+            }
+
+            static async createNote(noteData) {
+                return this.request('/notes', {
+                    method: 'POST',
+                    body: JSON.stringify(noteData)
+                });
+            }
+
+            static async getNotes() {
+                return this.request('/notes');
+            }
+
+            static async deleteNote(noteId) {
+                return this.request(`/notes/${noteId}`, {
+                    method: 'DELETE'
+                });
+            }
+        }
+
+        // Global variables
+        let notes = [];
+        let currentDecryptNote = null;
+
+        // UI utilities
+        function showAlert(message, type = 'success') {
+            const alertContainer = document.getElementById('alert-container');
+            const alertClass = type === 'error' ? 'alert-error' : 'alert-success';
+            
+            alertContainer.innerHTML = `
+                <div class="alert ${alertClass}">
+                    ${message}
+                </div>
+            `;
+            
+            setTimeout(() => {
+                alertContainer.innerHTML = '';
+            }, 5000);
+        }
+
+        function formatDate(dateString) {
+            return new Date(dateString).toLocaleString();
+        }
+
+        // Note creation
+        document.getElementById('noteForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const title = document.getElementById('title').value;
+            const content = document.getElementById('content').value;
+            const password = document.getElementById('password').value;
+
+            try {
+                showAlert('Encrypting note...', 'success');
+                
+                const encrypted = await CryptoUtils.encrypt(content, password);
+                
+                const noteData = {
+                    title: title,
+                    encrypted_content: CryptoUtils.arrayToBase64(encrypted.encrypted),
+                    salt: CryptoUtils.arrayToBase64(encrypted.salt),
+                    iv: CryptoUtils.arrayToBase64(encrypted.iv)
+                };
+
+                await API.createNote(noteData);
+                
+                // Reset form
+                document.getElementById('noteForm').reset();
+                
+                showAlert('Note created and encrypted successfully!');
+                await loadNotes();
+                
+            } catch (error) {
+                showAlert(`Error creating note: ${error.message}`, 'error');
+            }
+        });
+
+        // Note decryption
+        function showDecryptModal(note) {
+            currentDecryptNote = note;
+            document.getElementById('decryptNoteTitle').textContent = note.title;
+            document.getElementById('passwordModal').style.display = 'block';
+            document.getElementById('decryptPassword').focus();
+        }
+
+        function cancelDecrypt() {
+            document.getElementById('passwordModal').style.display = 'none';
+            document.getElementById('decryptPassword').value = '';
+            currentDecryptNote = null;
+        }
+
+        async function decryptNote() {
+            if (!currentDecryptNote) return;
+            
+            const password = document.getElementById('decryptPassword').value;
+            if (!password) {
+                showAlert('Please enter a password', 'error');
+                return;
+            }
+
+            try {
+                const encryptedArray = CryptoUtils.base64ToArray(currentDecryptNote.encrypted_content);
+                const salt = CryptoUtils.base64ToArray(currentDecryptNote.salt);
+                const iv = CryptoUtils.base64ToArray(currentDecryptNote.iv);
+                
+                const decryptedContent = await CryptoUtils.decrypt(encryptedArray, salt, iv, password);
+                
+                // Show decrypted content
+                showDecryptedNote(currentDecryptNote, decryptedContent);
+                cancelDecrypt();
+                
+            } catch (error) {
+                showAlert('Incorrect password or corrupted data', 'error');
+            }
+        }
+
+        function showDecryptedNote(note, content) {
+            const modal = document.createElement('div');
+            modal.style.cssText = `
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                background: rgba(0,0,0,0.8);
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                z-index: 1000;
+            `;
+            
+            modal.innerHTML = `
+                <div style="background: white; padding: 30px; border-radius: 15px; max-width: 80%; max-height: 80%; overflow-y: auto;">
+                    <h2 style="margin-bottom: 20px; color: #2c3e50;">${note.title}</h2>
+                    <div style="background: #f8f9fa; padding: 20px; border-radius: 10px; margin-bottom: 20px; white-space: pre-wrap; font-family: monospace;">${content}</div>
+                    <p style="color: #666; margin-bottom: 20px;">Created: ${formatDate(note.created_at)}</p>
+                    <button onclick="this.closest('div').parentElement.remove()" class="btn">Close</button>
+                </div>
+            `;
+            
+            document.body.appendChild(modal);
+        }
+
+        // Note deletion
+        async function deleteNote(noteId, noteTitle) {
+            if (!confirm(`Are you sure you want to delete "${noteTitle}"?`)) {
+                return;
+            }
+
+            try {
+                await API.deleteNote(noteId);
+                showAlert('Note deleted successfully');
+                await loadNotes();
+            } catch (error) {
+                showAlert(`Error deleting note: ${error.message}`, 'error');
+            }
+        }
+
+        // Load and display notes
+        async function loadNotes() {
+            try {
+                notes = await API.getNotes();
+                displayNotes();
+            } catch (error) {
+                document.getElementById('notesContainer').innerHTML = `
+                    <div class="alert alert-error">
+                        Error loading notes: ${error.message}
+                    </div>
+                `;
+            }
+        }
+
+        function displayNotes() {
+            const container = document.getElementById('notesContainer');
+            
+            if (notes.length === 0) {
+                container.innerHTML = `
+                    <div style="text-align: center; padding: 40px; color: #666;">
+                        <h3>No notes yet</h3>
+                        <p>Create your first encrypted note above!</p>
+                    </div>
+                `;
+                return;
+            }
+
+            const notesHtml = notes.map(note => `
+                <div class="note-card">
+                    <div class="note-title">
+                        ${note.title}
+                        <span class="encrypted-badge">🔒 Encrypted</span>
+                    </div>
+                    <div class="note-content">
+                        <em>Content is encrypted. Click "Decrypt" to view.</em>
+                    </div>
+                    <div class="note-meta">
+                        Created: ${formatDate(note.created_at)}<br>
+                        Updated: ${formatDate(note.updated_at)}
+                    </div>
+                    <div class="note-actions">
+                        <button onclick="showDecryptModal(${JSON.stringify(note).replace(/"/g, '&quot;')})" class="btn btn-small">
+                            🔓 Decrypt & View
+                        </button>
+                        <button onclick="deleteNote('${note.id}', '${note.title.replace(/'/g, "\\'")}')" class="btn btn-danger btn-small">
+                            🗑️ Delete
+                        </button>
+                    </div>
+                </div>
+            `).join('');
+
+            container.innerHTML = `
+                <h2 style="margin-bottom: 20px; color: #2c3e50;">Your Encrypted Notes (${notes.length})</h2>
+                <div class="notes-grid">
+                    ${notesHtml}
+                </div>
+            `;
+        }
+
+        // Handle password modal Enter key
+        document.getElementById('decryptPassword').addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                decryptNote();
+            }
+        });
+
+        // Initialize the application
+        document.addEventListener('DOMContentLoaded', () => {
+            loadNotes();
+        });
+    </script>
+</body>
+</html>
