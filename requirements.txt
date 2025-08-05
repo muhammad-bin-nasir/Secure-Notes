@@ -1,0 +1,5 @@
+fastapi
+uvicorn
+motor
+pydantic
+python-dotenv  # if you're using a .env file locally
