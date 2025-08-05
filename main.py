@@ -1,20 +1,20 @@
-from fastapi import FastAPI, HTTPException, Depends
+from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse
 from pydantic import BaseModel
 from motor.motor_asyncio import AsyncIOMotorClient
-from bson import ObjectId
+from bson.objectid import ObjectId
 from datetime import datetime
 from typing import List, Optional
 import os
 
 app = FastAPI(title="Secure Notes API")
 
-# CORS middleware for frontend
+# CORS middleware for frontend (change '*' to your frontend URL in production)
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # In production, specify your frontend URL
+    allow_origins=["*"],  # Change this to your frontend domain in production
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -29,9 +29,9 @@ notes_collection = database.notes
 # Pydantic models
 class NoteCreate(BaseModel):
     title: str
-    encrypted_content: str  # This will be the encrypted note content
-    salt: str  # Salt used for key derivation
-    iv: str   # Initialization vector for AES encryption
+    encrypted_content: str
+    salt: str
+    iv: str
 
 class NoteResponse(BaseModel):
     id: str
@@ -48,16 +48,19 @@ class NoteUpdate(BaseModel):
     salt: Optional[str] = None
     iv: Optional[str] = None
 
-# Serve static files (our frontend)
-app.mount("/static", StaticFiles(directory="static"), name="static")
+# Serve static files if directory exists
+if os.path.isdir("static"):
+    app.mount("/static", StaticFiles(directory="static"), name="static")
 
 @app.get("/")
 async def serve_frontend():
-    return FileResponse("static/index.html")
+    index_path = os.path.join("static", "index.html")
+    if os.path.isfile(index_path):
+        return FileResponse(index_path)
+    raise HTTPException(status_code=404, detail="Frontend not found")
 
 @app.post("/api/notes", response_model=NoteResponse)
 async def create_note(note: NoteCreate):
-    """Create a new encrypted note"""
     note_dict = {
         "title": note.title,
         "encrypted_content": note.encrypted_content,
@@ -66,27 +69,21 @@ async def create_note(note: NoteCreate):
         "created_at": datetime.utcnow(),
         "updated_at": datetime.utcnow()
     }
-    
     result = await notes_collection.insert_one(note_dict)
     note_dict["id"] = str(result.inserted_id)
-    note_dict.pop("_id", None)
-    
     return NoteResponse(**note_dict)
 
 @app.get("/api/notes", response_model=List[NoteResponse])
 async def get_notes():
-    """Get all notes (titles and encrypted content)"""
     notes = []
     async for note in notes_collection.find():
         note["id"] = str(note["_id"])
         note.pop("_id", None)
         notes.append(NoteResponse(**note))
-    
     return notes
 
 @app.get("/api/notes/{note_id}", response_model=NoteResponse)
 async def get_note(note_id: str):
-    """Get a specific note by ID"""
     try:
         object_id = ObjectId(note_id)
     except:
@@ -98,18 +95,15 @@ async def get_note(note_id: str):
     
     note["id"] = str(note["_id"])
     note.pop("_id", None)
-    
     return NoteResponse(**note)
 
 @app.put("/api/notes/{note_id}", response_model=NoteResponse)
 async def update_note(note_id: str, note_update: NoteUpdate):
-    """Update an existing note"""
     try:
         object_id = ObjectId(note_id)
     except:
         raise HTTPException(status_code=400, detail="Invalid note ID format")
     
-    # Build update document
     update_dict = {"updated_at": datetime.utcnow()}
     if note_update.title is not None:
         update_dict["title"] = note_update.title
@@ -128,16 +122,13 @@ async def update_note(note_id: str, note_update: NoteUpdate):
     if result.matched_count == 0:
         raise HTTPException(status_code=404, detail="Note not found")
     
-    # Return updated note
     note = await notes_collection.find_one({"_id": object_id})
     note["id"] = str(note["_id"])
     note.pop("_id", None)
-    
     return NoteResponse(**note)
 
 @app.delete("/api/notes/{note_id}")
 async def delete_note(note_id: str):
-    """Delete a note"""
     try:
         object_id = ObjectId(note_id)
     except:
@@ -151,9 +142,4 @@ async def delete_note(note_id: str):
 
 @app.get("/api/health")
 async def health_check():
-    """Health check endpoint"""
     return {"status": "healthy"}
-
-if __name__ == "__main__":
-    import uvicorn
-    uvicorn.run(app, host="0.0.0.0", port=8000)
