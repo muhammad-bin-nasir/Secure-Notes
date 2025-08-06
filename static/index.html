@@ -3,8 +3,26 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Secure Notes</title>
+    <title>Secure Notes - Your Digital Vault</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <style>
+        :root {
+            --primary-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            --secondary-gradient: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            --success-gradient: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            --danger-gradient: linear-gradient(135deg, #fa709a 0%, #fee140 100%);
+            --dark-gradient: linear-gradient(135deg, #2c3e50 0%, #3498db 100%);
+            --glass-bg: rgba(255, 255, 255, 0.1);
+            --glass-border: rgba(255, 255, 255, 0.2);
+            --text-primary: #2c3e50;
+            --text-secondary: #7f8c8d;
+            --shadow-light: 0 8px 32px rgba(31, 38, 135, 0.37);
+            --shadow-heavy: 0 20px 60px rgba(31, 38, 135, 0.5);
+            --border-radius: 20px;
+            --animation-fast: 0.3s ease;
+            --animation-slow: 0.6s ease;
+        }
+
         * {
             margin: 0;
             padding: 0;
@@ -12,225 +30,537 @@
         }
 
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%);
+            background-attachment: fixed;
             min-height: 100vh;
             padding: 20px;
+            overflow-x: hidden;
+        }
+
+        /* Animated background elements */
+        .bg-decoration {
+            position: fixed;
+            pointer-events: none;
+            z-index: -1;
+        }
+
+        .bg-circle {
+            width: 300px;
+            height: 300px;
+            border-radius: 50%;
+            background: var(--glass-bg);
+            backdrop-filter: blur(10px);
+            animation: float 6s ease-in-out infinite;
+        }
+
+        .bg-circle:nth-child(1) {
+            top: 10%;
+            right: 10%;
+            animation-delay: -2s;
+        }
+
+        .bg-circle:nth-child(2) {
+            bottom: 20%;
+            left: -10%;
+            animation-delay: -4s;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0px) rotate(0deg); }
+            50% { transform: translateY(-20px) rotate(180deg); }
         }
 
         .container {
             max-width: 1200px;
             margin: 0 auto;
-            background: rgba(255, 255, 255, 0.95);
-            border-radius: 20px;
-            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            background: var(--glass-bg);
+            backdrop-filter: blur(20px);
+            border: 1px solid var(--glass-border);
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow-heavy);
             overflow: hidden;
+            animation: slideUp 0.8s ease-out;
+        }
+
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
         }
 
         .header {
-            background: linear-gradient(135deg, #2c3e50, #34495e);
+            background: var(--dark-gradient);
             color: white;
-            padding: 30px;
+            padding: 40px 30px;
             text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .header::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+            animation: shimmer 3s infinite;
+        }
+
+        @keyframes shimmer {
+            0% { left: -100%; }
+            100% { left: 100%; }
         }
 
         .header h1 {
-            font-size: 2.5rem;
-            margin-bottom: 10px;
+            font-size: 3rem;
+            font-weight: 800;
+            margin-bottom: 15px;
+            background: linear-gradient(45deg, #fff, #a8edea);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            text-shadow: 0 0 30px rgba(255,255,255,0.5);
         }
 
         .header p {
+            font-size: 1.2rem;
             opacity: 0.9;
-            font-size: 1.1rem;
+            font-weight: 400;
+            letter-spacing: 0.5px;
         }
 
         .main-content {
-            padding: 30px;
+            padding: 40px;
+            background: rgba(255, 255, 255, 0.95);
         }
 
         .note-form {
-            background: #f8f9fa;
-            padding: 30px;
-            border-radius: 15px;
-            margin-bottom: 30px;
-            border: 2px solid #e9ecef;
+            background: white;
+            padding: 35px;
+            border-radius: var(--border-radius);
+            margin-bottom: 40px;
+            box-shadow: var(--shadow-light);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            position: relative;
+            overflow: hidden;
+            transition: transform var(--animation-fast), box-shadow var(--animation-fast);
+        }
+
+        .note-form:hover {
+            transform: translateY(-5px);
+            box-shadow: var(--shadow-heavy);
+        }
+
+        .note-form::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: var(--primary-gradient);
+        }
+
+        .form-title {
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: var(--text-primary);
+            margin-bottom: 25px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
         }
 
         .form-group {
-            margin-bottom: 20px;
+            margin-bottom: 25px;
+            position: relative;
         }
 
         label {
             display: block;
             margin-bottom: 8px;
             font-weight: 600;
-            color: #2c3e50;
+            color: var(--text-primary);
+            font-size: 0.95rem;
+            letter-spacing: 0.5px;
         }
 
         input, textarea {
             width: 100%;
-            padding: 12px 15px;
-            border: 2px solid #ddd;
-            border-radius: 8px;
+            padding: 15px 20px;
+            border: 2px solid #e1e8ed;
+            border-radius: 12px;
             font-size: 16px;
-            transition: border-color 0.3s ease;
+            font-family: inherit;
+            transition: all var(--animation-fast);
+            background: #fafbfc;
         }
 
         input:focus, textarea:focus {
             outline: none;
             border-color: #667eea;
-            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+            background: white;
+            box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.1);
+            transform: translateY(-2px);
         }
 
         textarea {
             resize: vertical;
             min-height: 120px;
+            line-height: 1.6;
         }
 
         .btn {
-            background: linear-gradient(135deg, #667eea, #764ba2);
+            background: var(--primary-gradient);
             color: white;
             border: none;
-            padding: 12px 25px;
-            border-radius: 8px;
+            padding: 15px 30px;
+            border-radius: 12px;
             cursor: pointer;
             font-size: 16px;
             font-weight: 600;
-            transition: transform 0.2s, box-shadow 0.2s;
-            margin-right: 10px;
+            font-family: inherit;
+            transition: all var(--animation-fast);
+            position: relative;
+            overflow: hidden;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+            transition: left var(--animation-fast);
+        }
+
+        .btn:hover::before {
+            left: 100%;
         }
 
         .btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+            transform: translateY(-3px) scale(1.02);
+            box-shadow: 0 10px 25px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn:active {
+            transform: translateY(-1px) scale(0.98);
         }
 
         .btn-danger {
-            background: linear-gradient(135deg, #e74c3c, #c0392b);
+            background: var(--danger-gradient);
         }
 
         .btn-danger:hover {
-            box-shadow: 0 5px 15px rgba(231, 76, 60, 0.4);
+            box-shadow: 0 10px 25px rgba(250, 112, 154, 0.4);
         }
 
         .btn-secondary {
             background: linear-gradient(135deg, #95a5a6, #7f8c8d);
         }
 
+        .btn-small {
+            padding: 10px 20px;
+            font-size: 14px;
+            border-radius: 8px;
+        }
+
+        .password-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            backdrop-filter: blur(5px);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            animation: fadeIn var(--animation-fast);
+        }
+
+        .password-modal-content {
+            background: white;
+            padding: 40px;
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow-heavy);
+            max-width: 500px;
+            width: 90%;
+            animation: modalSlide var(--animation-slow);
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        @keyframes modalSlide {
+            from {
+                opacity: 0;
+                transform: translateY(-50px) scale(0.9);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0) scale(1);
+            }
+        }
+
         .notes-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
-            gap: 20px;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 25px;
+            margin-top: 30px;
         }
 
         .note-card {
             background: white;
-            border-radius: 15px;
-            padding: 25px;
-            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.1);
-            border: 2px solid #f1f3f5;
-            transition: transform 0.2s, box-shadow 0.2s;
+            border-radius: var(--border-radius);
+            padding: 30px;
+            box-shadow: var(--shadow-light);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            transition: all var(--animation-fast);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .note-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: var(--success-gradient);
         }
 
         .note-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+            transform: translateY(-8px) scale(1.02);
+            box-shadow: var(--shadow-heavy);
         }
 
         .note-title {
-            font-size: 1.4rem;
+            font-size: 1.5rem;
             font-weight: 700;
-            color: #2c3e50;
+            color: var(--text-primary);
             margin-bottom: 15px;
-            border-bottom: 2px solid #eee;
-            padding-bottom: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            border-bottom: 2px solid #f8f9fa;
+            padding-bottom: 15px;
         }
 
         .note-content {
-            color: #555;
-            line-height: 1.6;
+            color: var(--text-secondary);
+            line-height: 1.7;
             margin-bottom: 20px;
             font-size: 1rem;
+            font-style: italic;
         }
 
         .note-meta {
-            color: #888;
-            font-size: 0.9rem;
-            margin-bottom: 15px;
+            color: var(--text-secondary);
+            font-size: 0.85rem;
+            margin-bottom: 20px;
+            padding: 10px;
+            background: #f8f9fa;
+            border-radius: 8px;
         }
 
         .note-actions {
             display: flex;
-            gap: 10px;
-        }
-
-        .btn-small {
-            padding: 8px 15px;
-            font-size: 14px;
-        }
-
-        .password-form {
-            background: #fff3cd;
-            border: 2px solid #ffeaa7;
-            border-radius: 10px;
-            padding: 20px;
-            margin-bottom: 20px;
-        }
-
-        .alert {
-            padding: 15px;
-            border-radius: 8px;
-            margin-bottom: 20px;
-        }
-
-        .alert-success {
-            background: #d4edda;
-            border: 2px solid #c3e6cb;
-            color: #155724;
-        }
-
-        .alert-error {
-            background: #f8d7da;
-            border: 2px solid #f5c6cb;
-            color: #721c24;
+            gap: 12px;
+            flex-wrap: wrap;
         }
 
         .encrypted-badge {
-            background: #28a745;
+            background: var(--success-gradient);
             color: white;
-            padding: 4px 8px;
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            box-shadow: 0 4px 15px rgba(79, 172, 254, 0.3);
+        }
+
+        .alert {
+            padding: 20px;
             border-radius: 12px;
-            font-size: 0.8rem;
-            font-weight: 600;
+            margin-bottom: 25px;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            animation: slideIn var(--animation-slow);
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateX(-30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        .alert-success {
+            background: linear-gradient(135deg, #d4edda, #c3e6cb);
+            color: #155724;
+            border-left: 4px solid #28a745;
+        }
+
+        .alert-error {
+            background: linear-gradient(135deg, #f8d7da, #f5c6cb);
+            color: #721c24;
+            border-left: 4px solid #dc3545;
         }
 
         .loading {
             text-align: center;
-            padding: 40px;
-            color: #666;
-            font-size: 1.1rem;
+            padding: 60px;
+            color: var(--text-secondary);
+            font-size: 1.2rem;
+            font-weight: 500;
         }
 
+        .loading::after {
+            content: '';
+            display: block;
+            width: 40px;
+            height: 40px;
+            margin: 20px auto;
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #667eea;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 60px;
+            color: var(--text-secondary);
+        }
+
+        .empty-state h3 {
+            font-size: 1.8rem;
+            margin-bottom: 15px;
+            color: var(--text-primary);
+        }
+
+        .empty-state p {
+            font-size: 1.1rem;
+            line-height: 1.6;
+        }
+
+        /* Responsive Design */
         @media (max-width: 768px) {
+            body {
+                padding: 10px;
+            }
+
             .notes-grid {
                 grid-template-columns: 1fr;
+                gap: 20px;
             }
             
             .header h1 {
-                font-size: 2rem;
+                font-size: 2.5rem;
             }
             
             .main-content {
-                padding: 20px;
+                padding: 25px;
+            }
+
+            .note-form {
+                padding: 25px;
+            }
+
+            .btn {
+                padding: 12px 20px;
+                font-size: 14px;
+            }
+
+            .password-modal-content {
+                padding: 30px 25px;
+                margin: 20px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .header h1 {
+                font-size: 2rem;
+            }
+
+            .note-actions {
+                flex-direction: column;
+            }
+
+            .btn {
+                justify-content: center;
+            }
+        }
+
+        /* Dark mode support */
+        @media (prefers-color-scheme: dark) {
+            .main-content {
+                background: rgba(45, 55, 72, 0.95);
+            }
+
+            .note-form, .note-card, .password-modal-content {
+                background: #2d3748;
+                color: #e2e8f0;
+            }
+
+            input, textarea {
+                background: #4a5568;
+                border-color: #718096;
+                color: #e2e8f0;
+            }
+
+            input:focus, textarea:focus {
+                background: #2d3748;
+            }
+
+            .note-meta {
+                background: #4a5568;
             }
         }
     </style>
 </head>
 <body>
+    <!-- Background decorations -->
+    <div class="bg-decoration bg-circle"></div>
+    <div class="bg-decoration bg-circle"></div>
+
     <div class="container">
         <div class="header">
             <h1>🛡️ Secure Notes</h1>
-            <p>Your personal notes, encrypted and secure</p>
+            <p>Your personal digital vault - encrypted and secure</p>
         </div>
 
         <div class="main-content">
@@ -238,46 +568,337 @@
 
             <!-- New Note Form -->
             <div class="note-form">
-                <h2 style="margin-bottom: 20px; color: #2c3e50;">Create New Note</h2>
+                <h2 class="form-title">
+                    ✨ Create New Note
+                </h2>
                 <form id="noteForm">
                     <div class="form-group">
-                        <label for="title">Note Title</label>
-                        <input type="text" id="title" required placeholder="Enter a title for your note">
+                        <label for="title">📝 Note Title</label>
+                        <input type="text" id="title" required placeholder="Give your note a memorable title">
                     </div>
                     <div class="form-group">
-                        <label for="content">Note Content</label>
-                        <textarea id="content" required placeholder="Write your note here..."></textarea>
+                        <label for="content">📄 Note Content</label>
+                        <textarea id="content" required placeholder="Write your confidential note here..."></textarea>
                     </div>
                     <div class="form-group">
-                        <label for="password">Encryption Password</label>
-                        <input type="password" id="password" required placeholder="Enter password to encrypt this note">
+                        <label for="password">🔐 Encryption Password</label>
+                        <input type="password" id="password" required placeholder="Choose a strong password for encryption">
                     </div>
                     <button type="submit" class="btn">
-                        🔒 Create Encrypted Note
+                        🔒 Encrypt & Save Note
                     </button>
                 </form>
             </div>
 
-            <!-- Password Entry for Decryption -->
-            <div id="passwordModal" class="password-form" style="display: none;">
-                <h3>Enter Password to Decrypt Note</h3>
-                <p>Note: <span id="decryptNoteTitle"></span></p>
-                <div class="form-group">
-                    <input type="password" id="decryptPassword" placeholder="Enter password">
-                </div>
-                <button onclick="decryptNote()" class="btn">Decrypt</button>
-                <button onclick="cancelDecrypt()" class="btn-secondary btn">Cancel</button>
-            </div>
-
             <!-- Notes Display -->
             <div id="notesContainer">
-                <div class="loading">Loading notes...</div>
+                <div class="loading">Loading your secure notes...</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Password Modal -->
+    <div id="passwordModal" class="password-modal" style="display: none;">
+        <div class="password-modal-content">
+            <h3 style="margin-bottom: 20px; color: var(--text-primary);">🔓 Unlock Your Note</h3>
+            <p style="margin-bottom: 20px; color: var(--text-secondary);">
+                Note: <strong id="decryptNoteTitle"></strong>
+            </p>
+            <div class="form-group">
+                <input type="password" id="decryptPassword" placeholder="Enter your password" style="margin-bottom: 20px;">
+            </div>
+            <div style="display: flex; gap: 15px; justify-content: flex-end;">
+                <button onclick="cancelDecrypt()" class="btn btn-secondary">Cancel</button>
+                <button onclick="decryptNote()" class="btn">🔓 Decrypt</button>
             </div>
         </div>
     </div>
 
     <script>
-        // Encryption utilities using Web Crypto API
+        // Handle password modal Enter key
+        document.getElementById('decryptPassword').addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                decryptNote();
+            }
+        });
+
+        // Handle Escape key to close modals
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') {
+                // Close password modal
+                if (document.getElementById('passwordModal').style.display === 'flex') {
+                    cancelDecrypt();
+                }
+                // Close any decrypted note modals
+                const openModals = document.querySelectorAll('.password-modal');
+                openModals.forEach(modal => {
+                    if (modal.id !== 'passwordModal') {
+                        modal.remove();
+                    }
+                });
+            }
+        });
+
+        // Add smooth scrolling to newly created notes
+        function scrollToNotes() {
+            const notesContainer = document.getElementById('notesContainer');
+            notesContainer.scrollIntoView({ 
+                behavior: 'smooth', 
+                block: 'start' 
+            });
+        }
+
+        // Add form validation feedback
+        function validateForm() {
+            const title = document.getElementById('title');
+            const content = document.getElementById('content');
+            const password = document.getElementById('password');
+
+            // Real-time validation
+            [title, content, password].forEach(field => {
+                field.addEventListener('input', () => {
+                    if (field.value.trim()) {
+                        field.style.borderColor = '#28a745';
+                    } else {
+                        field.style.borderColor = '#e1e8ed';
+                    }
+                });
+            });
+
+            // Password strength indicator
+            password.addEventListener('input', (e) => {
+                const value = e.target.value;
+                let strength = 0;
+                let feedback = '';
+
+                if (value.length >= 8) strength++;
+                if (value.match(/[a-z]/)) strength++;
+                if (value.match(/[A-Z]/)) strength++;
+                if (value.match(/[0-9]/)) strength++;
+                if (value.match(/[^a-zA-Z0-9]/)) strength++;
+
+                const colors = ['#dc3545', '#fd7e14', '#ffc107', '#28a745', '#20c997'];
+                const messages = ['Very Weak', 'Weak', 'Fair', 'Good', 'Strong'];
+
+                if (value.length > 0) {
+                    e.target.style.borderColor = colors[strength - 1] || '#dc3545';
+                    
+                    // Remove existing strength indicator
+                    const existingIndicator = e.target.parentNode.querySelector('.strength-indicator');
+                    if (existingIndicator) {
+                        existingIndicator.remove();
+                    }
+
+                    // Add strength indicator
+                    const indicator = document.createElement('div');
+                    indicator.className = 'strength-indicator';
+                    indicator.style.cssText = `
+                        font-size: 0.8rem;
+                        margin-top: 5px;
+                        color: ${colors[strength - 1] || '#dc3545'};
+                        font-weight: 600;
+                    `;
+                    indicator.textContent = `Password Strength: ${messages[strength - 1] || 'Very Weak'}`;
+                    e.target.parentNode.appendChild(indicator);
+                }
+            });
+        }
+
+        // Add copy to clipboard functionality for decrypted notes
+        function copyToClipboard(text) {
+            navigator.clipboard.writeText(text).then(() => {
+                showAlert('📋 Content copied to clipboard!');
+            }).catch(() => {
+                showAlert('❌ Failed to copy to clipboard', 'error');
+            });
+        }
+
+        // Enhanced showDecryptedNote with copy functionality
+        function showDecryptedNote(note, content) {
+            const modal = document.createElement('div');
+            modal.className = 'password-modal';
+            modal.style.display = 'flex';
+            
+            modal.innerHTML = `
+                <div class="password-modal-content" style="max-width: 90%; max-height: 80%; overflow-y: auto;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                        <h2 style="color: var(--text-primary); display: flex; align-items: center; gap: 10px; margin: 0;">
+                            📖 ${note.title}
+                        </h2>
+                        <button onclick="copyToClipboard(\`${content.replace(/`/g, '\\`')}\`)" class="btn btn-small btn-secondary" title="Copy to clipboard">
+                            📋 Copy
+                        </button>
+                    </div>
+                    <div style="background: #f8f9fa; padding: 25px; border-radius: 12px; margin-bottom: 25px; white-space: pre-wrap; font-family: 'Courier New', monospace; line-height: 1.6; border-left: 4px solid #667eea; max-height: 400px; overflow-y: auto;">${content}</div>
+                    <div style="color: var(--text-secondary); margin-bottom: 25px; padding: 15px; background: #f1f3f5; border-radius: 8px;">
+                        📅 <strong>Created:</strong> ${formatDate(note.created_at)}<br>
+                        🔄 <strong>Updated:</strong> ${formatDate(note.updated_at)}<br>
+                        📊 <strong>Characters:</strong> ${content.length}
+                    </div>
+                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                        <button onclick="printNote('${note.title}', \`${content.replace(/`/g, '\\`')}\`)" class="btn btn-small btn-secondary">
+                            🖨️ Print
+                        </button>
+                        <button onclick="this.closest('.password-modal').remove()" class="btn">
+                            ✨ Close
+                        </button>
+                    </div>
+                </div>
+            `;
+            
+            document.body.appendChild(modal);
+        }
+
+        // Print functionality
+        function printNote(title, content) {
+            const printWindow = window.open('', '_blank');
+            printWindow.document.write(`
+                <html>
+                <head>
+                    <title>Print: ${title}</title>
+                    <style>
+                        body { font-family: Arial, sans-serif; padding: 20px; line-height: 1.6; }
+                        h1 { color: #2c3e50; border-bottom: 2px solid #eee; padding-bottom: 10px; }
+                        .content { white-space: pre-wrap; background: #f8f9fa; padding: 20px; border-radius: 5px; }
+                        .footer { margin-top: 20px; font-size: 0.9em; color: #666; }
+                    </style>
+                </head>
+                <body>
+                    <h1>🛡️ ${title}</h1>
+                    <div class="content">${content}</div>
+                    <div class="footer">Printed from Secure Notes - ${new Date().toLocaleString()}</div>
+                </body>
+                </html>
+            `);
+            printWindow.document.close();
+            printWindow.print();
+        }
+
+        // Add search functionality
+        function addSearchFunctionality() {
+            const searchHTML = `
+                <div style="margin-bottom: 30px;">
+                    <input type="text" id="searchNotes" placeholder="🔍 Search your notes by title..." 
+                           style="width: 100%; padding: 15px 20px; border: 2px solid #e1e8ed; border-radius: 12px; font-size: 16px;">
+                </div>
+            `;
+
+            // Add search to notes container when notes are loaded
+            const originalDisplayNotes = displayNotes;
+            displayNotes = function() {
+                originalDisplayNotes.call(this);
+                
+                if (notes.length > 0) {
+                    const container = document.getElementById('notesContainer');
+                    const existingSearch = document.getElementById('searchNotes');
+                    
+                    if (!existingSearch) {
+                        const searchDiv = document.createElement('div');
+                        searchDiv.innerHTML = searchHTML;
+                        container.insertBefore(searchDiv, container.firstChild);
+                        
+                        // Add search functionality
+                        document.getElementById('searchNotes').addEventListener('input', (e) => {
+                            const searchTerm = e.target.value.toLowerCase();
+                            const noteCards = document.querySelectorAll('.note-card');
+                            
+                            noteCards.forEach(card => {
+                                const title = card.querySelector('.note-title span').textContent.toLowerCase();
+                                if (title.includes(searchTerm)) {
+                                    card.style.display = 'block';
+                                } else {
+                                    card.style.display = 'none';
+                                }
+                            });
+                        });
+                    }
+                }
+            };
+        }
+
+        // Enhanced error handling with retry functionality
+        class EnhancedAPI extends API {
+            static async requestWithRetry(url, options = {}, retries = 3) {
+                for (let i = 0; i < retries; i++) {
+                    try {
+                        return await this.request(url, options);
+                    } catch (error) {
+                        if (i === retries - 1) throw error;
+                        
+                        showAlert(`⚠️ Request failed, retrying... (${i + 1}/${retries})`, 'error');
+                        await new Promise(resolve => setTimeout(resolve, 1000 * (i + 1)));
+                    }
+                }
+            }
+
+            static async createNote(noteData) {
+                return this.requestWithRetry('/notes', {
+                    method: 'POST',
+                    body: JSON.stringify(noteData)
+                });
+            }
+
+            static async getNotes() {
+                return this.requestWithRetry('/notes');
+            }
+
+            static async deleteNote(noteId) {
+                return this.requestWithRetry(`/notes/${noteId}`, {
+                    method: 'DELETE'
+                });
+            }
+        }
+
+        // Replace API with EnhancedAPI
+        window.API = EnhancedAPI;
+
+        // Initialize the application
+        document.addEventListener('DOMContentLoaded', () => {
+            loadNotes();
+            validateForm();
+            addSearchFunctionality();
+            
+            // Add keyboard shortcuts
+            document.addEventListener('keydown', (e) => {
+                // Ctrl/Cmd + N for new note
+                if ((e.ctrlKey || e.metaKey) && e.key === 'n') {
+                    e.preventDefault();
+                    document.getElementById('title').focus();
+                    showAlert('🎯 Ready to create a new note!');
+                }
+                
+                // Ctrl/Cmd + R to refresh notes
+                if ((e.ctrlKey || e.metaKey) && e.key === 'r') {
+                    e.preventDefault();
+                    loadNotes();
+                    showAlert('🔄 Refreshing notes...');
+                }
+            });
+
+            // Show welcome message on first visit
+            if (!localStorage.getItem('visited')) {
+                setTimeout(() => {
+                    showAlert('🎉 Welcome to Secure Notes! Your notes are protected with military-grade encryption.');
+                    localStorage.setItem('visited', 'true');
+                }, 1000);
+            }
+        });
+
+        // Service Worker for offline support (basic)
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register('/sw.js').catch(() => {
+                // Silently fail if no service worker
+            });
+        }
+
+        // Add performance monitoring
+        window.addEventListener('load', () => {
+            const loadTime = performance.now();
+            console.log(`🚀 Secure Notes loaded in ${loadTime.toFixed(2)}ms`);
+        });
+    </script>
+</body>
+</html> Encryption utilities using Web Crypto API
         class CryptoUtils {
             static async deriveKey(password, salt) {
                 const encoder = new TextEncoder();
@@ -390,10 +1011,11 @@
         function showAlert(message, type = 'success') {
             const alertContainer = document.getElementById('alert-container');
             const alertClass = type === 'error' ? 'alert-error' : 'alert-success';
+            const icon = type === 'error' ? '❌' : '✅';
             
             alertContainer.innerHTML = `
                 <div class="alert ${alertClass}">
-                    ${message}
+                    ${icon} ${message}
                 </div>
             `;
             
@@ -415,7 +1037,7 @@
             const password = document.getElementById('password').value;
 
             try {
-                showAlert('Encrypting note...', 'success');
+                showAlert('🔄 Encrypting your note...', 'success');
                 
                 const encrypted = await CryptoUtils.encrypt(content, password);
                 
@@ -431,11 +1053,11 @@
                 // Reset form
                 document.getElementById('noteForm').reset();
                 
-                showAlert('Note created and encrypted successfully!');
+                showAlert('🎉 Note created and encrypted successfully!');
                 await loadNotes();
                 
             } catch (error) {
-                showAlert(`Error creating note: ${error.message}`, 'error');
+                showAlert(`❌ Error creating note: ${error.message}`, 'error');
             }
         });
 
@@ -443,7 +1065,7 @@
         function showDecryptModal(note) {
             currentDecryptNote = note;
             document.getElementById('decryptNoteTitle').textContent = note.title;
-            document.getElementById('passwordModal').style.display = 'block';
+            document.getElementById('passwordModal').style.display = 'flex';
             document.getElementById('decryptPassword').focus();
         }
 
@@ -474,31 +1096,28 @@
                 cancelDecrypt();
                 
             } catch (error) {
-                showAlert('Incorrect password or corrupted data', 'error');
+                showAlert('❌ Incorrect password or corrupted data', 'error');
             }
         }
 
         function showDecryptedNote(note, content) {
             const modal = document.createElement('div');
-            modal.style.cssText = `
-                position: fixed;
-                top: 0;
-                left: 0;
-                width: 100%;
-                height: 100%;
-                background: rgba(0,0,0,0.8);
-                display: flex;
-                justify-content: center;
-                align-items: center;
-                z-index: 1000;
-            `;
+            modal.className = 'password-modal';
+            modal.style.display = 'flex';
             
             modal.innerHTML = `
-                <div style="background: white; padding: 30px; border-radius: 15px; max-width: 80%; max-height: 80%; overflow-y: auto;">
-                    <h2 style="margin-bottom: 20px; color: #2c3e50;">${note.title}</h2>
-                    <div style="background: #f8f9fa; padding: 20px; border-radius: 10px; margin-bottom: 20px; white-space: pre-wrap; font-family: monospace;">${content}</div>
-                    <p style="color: #666; margin-bottom: 20px;">Created: ${formatDate(note.created_at)}</p>
-                    <button onclick="this.closest('div').parentElement.remove()" class="btn">Close</button>
+                <div class="password-modal-content" style="max-width: 90%; max-height: 80%; overflow-y: auto;">
+                    <h2 style="margin-bottom: 20px; color: var(--text-primary); display: flex; align-items: center; gap: 10px;">
+                        📖 ${note.title}
+                    </h2>
+                    <div style="background: #f8f9fa; padding: 25px; border-radius: 12px; margin-bottom: 25px; white-space: pre-wrap; font-family: 'Courier New', monospace; line-height: 1.6; border-left: 4px solid #667eea;">${content}</div>
+                    <div style="color: var(--text-secondary); margin-bottom: 25px; padding: 15px; background: #f1f3f5; border-radius: 8px;">
+                        📅 <strong>Created:</strong> ${formatDate(note.created_at)}<br>
+                        🔄 <strong>Updated:</strong> ${formatDate(note.updated_at)}
+                    </div>
+                    <div style="text-align: right;">
+                        <button onclick="this.closest('.password-modal').remove()" class="btn">✨ Close</button>
+                    </div>
                 </div>
             `;
             
@@ -507,16 +1126,16 @@
 
         // Note deletion
         async function deleteNote(noteId, noteTitle) {
-            if (!confirm(`Are you sure you want to delete "${noteTitle}"?`)) {
+            if (!confirm(`⚠️ Are you sure you want to permanently delete "${noteTitle}"?\n\nThis action cannot be undone.`)) {
                 return;
             }
 
             try {
                 await API.deleteNote(noteId);
-                showAlert('Note deleted successfully');
+                showAlert('🗑️ Note deleted successfully');
                 await loadNotes();
             } catch (error) {
-                showAlert(`Error deleting note: ${error.message}`, 'error');
+                showAlert(`❌ Error deleting note: ${error.message}`, 'error');
             }
         }
 
@@ -528,7 +1147,7 @@
             } catch (error) {
                 document.getElementById('notesContainer').innerHTML = `
                     <div class="alert alert-error">
-                        Error loading notes: ${error.message}
+                        ❌ Error loading notes: ${error.message}
                     </div>
                 `;
             }
@@ -539,9 +1158,10 @@
             
             if (notes.length === 0) {
                 container.innerHTML = `
-                    <div style="text-align: center; padding: 40px; color: #666;">
-                        <h3>No notes yet</h3>
-                        <p>Create your first encrypted note above!</p>
+                    <div class="empty-state">
+                        <h3>📝 No notes yet</h3>
+                        <p>Create your first encrypted note above to get started!<br>
+                        Your notes are secured with military-grade encryption.</p>
                     </div>
                 `;
                 return;
@@ -550,15 +1170,15 @@
             const notesHtml = notes.map(note => `
                 <div class="note-card">
                     <div class="note-title">
-                        ${note.title}
+                        <span>${note.title}</span>
                         <span class="encrypted-badge">🔒 Encrypted</span>
                     </div>
                     <div class="note-content">
-                        <em>Content is encrypted. Click "Decrypt" to view.</em>
+                        🔐 <em>Content is encrypted and secure. Click "Decrypt" to view your note.</em>
                     </div>
                     <div class="note-meta">
-                        Created: ${formatDate(note.created_at)}<br>
-                        Updated: ${formatDate(note.updated_at)}
+                        📅 <strong>Created:</strong> ${formatDate(note.created_at)}<br>
+                        🔄 <strong>Updated:</strong> ${formatDate(note.updated_at)}
                     </div>
                     <div class="note-actions">
                         <button onclick="showDecryptModal(${JSON.stringify(note).replace(/"/g, '&quot;')})" class="btn btn-small">
@@ -572,24 +1192,13 @@
             `).join('');
 
             container.innerHTML = `
-                <h2 style="margin-bottom: 20px; color: #2c3e50;">Your Encrypted Notes (${notes.length})</h2>
+                <h2 style="margin-bottom: 30px; color: var(--text-primary); font-size: 2rem; font-weight: 700; text-align: center;">
+                    🗂️ Your Encrypted Notes <span style="background: var(--success-gradient); color: white; padding: 8px 16px; border-radius: 20px; font-size: 1rem; margin-left: 15px;">${notes.length}</span>
+                </h2>
                 <div class="notes-grid">
                     ${notesHtml}
                 </div>
             `;
         }
 
-        // Handle password modal Enter key
-        document.getElementById('decryptPassword').addEventListener('keypress', (e) => {
-            if (e.key === 'Enter') {
-                decryptNote();
-            }
-        });
-
-        // Initialize the application
-        document.addEventListener('DOMContentLoaded', () => {
-            loadNotes();
-        });
-    </script>
-</body>
-</html>
+        //
