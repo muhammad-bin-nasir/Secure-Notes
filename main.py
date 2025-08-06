@@ -21,7 +21,7 @@ app.add_middleware(
 )
 
 # MongoDB
-MONGODB_URL = os.getenv("MONGODB_URL")
+MONGODB_URL = os.getenv("MONGO_URL")
 if not MONGODB_URL:
     raise RuntimeError("MONGODB_URL environment variable not set")
 
@@ -134,3 +134,4 @@ async def delete_note(note_id: str):
 @app.get("/api/health")
 async def health_check():
     return {"status": "healthy"}
+
