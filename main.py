@@ -184,13 +184,17 @@ async def delete_note(note_id: str):
 
 @app.get("/api/health")
 async def health_check():
+    return {"status": "healthy", "message": "API is running"}
+
+@app.get("/api/health/db")
+async def health_check_db():
     try:
-        # Test MongoDB connection
+        # Test MongoDB connection with timeout
         await database.command("ping")
         return {"status": "healthy", "mongodb": "connected"}
     except Exception as e:
-        logger.error(f"Health check failed: {e}")
-        return {"status": "unhealthy", "error": str(e)}
+        logger.error(f"Database health check failed: {e}")
+        raise HTTPException(status_code=503, detail="Database unavailable")
 
 # Startup event
 @app.on_event("startup")
@@ -203,4 +207,6 @@ async def startup_event():
 
 if __name__ == "__main__":
     import uvicorn
-    uvicorn.run(app, host="0.0.0.0", port=8000)
+    port = int(os.environ.get("PORT", 8000))
+    logger.info(f"Starting server on port: {port}")
+    uvicorn.run(app, host="0.0.0.0", port=port)
