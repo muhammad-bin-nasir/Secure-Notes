@@ -120,25 +120,28 @@ async def get_current_user(credentials: HTTPAuthorizationCredentials = Depends(s
     return verify_jwt_token(credentials.credentials)
 
 # Static frontend - with error handling
-static_path = os.path.join(os.path.dirname(__file__), "static")
+
+static_path = "static"
 logger.info(f"Static path: {static_path}")
 logger.info(f"Static path exists: {os.path.exists(static_path)}")
 
-if os.path.exists(static_path):
-    app.mount("/static", StaticFiles(directory=static_path), name="static")
-    logger.info("Static files mounted successfully")
-else:
-    logger.error(f"Static directory not found at: {static_path}")
+# Create static directory if it doesn't exist
+if not os.path.exists(static_path):
+    os.makedirs(static_path)
+    logger.info("Created static directory")
+
+app.mount("/static", StaticFiles(directory=static_path), name="static")
+logger.info("Static files mounted successfully")
 
 @app.get("/")
 async def serve_frontend():
-    index_path = os.path.join(static_path, "index.html")
+    index_path = os.path.join("static", "index.html")
     logger.info(f"Attempting to serve: {index_path}")
     logger.info(f"Index file exists: {os.path.exists(index_path)}")
     
     if not os.path.exists(index_path):
         logger.error(f"index.html not found at: {index_path}")
-        return {"error": "Frontend not found", "path": index_path}
+        return {"error": "Frontend not found", "path": index_path, "cwd": os.getcwd(), "files": os.listdir(".")}
     
     return FileResponse(index_path)
 
@@ -357,3 +360,4 @@ if __name__ == "__main__":
     port = int(os.environ.get("PORT", 8000))
     logger.info(f"Starting server on port: {port}")
     uvicorn.run(app, host="0.0.0.0", port=port)
+
